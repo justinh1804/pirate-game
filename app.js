@@ -15,14 +15,24 @@ function Initialize(){
     game.Initialize();
 }
 function Animate(timeStamp){
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     let deltaTime = timeStamp-lastTime;
     lastTime = timeStamp;
     
-    //ctx.drawImage(map, canvas.width/2-game.playersArray[0].x, canvas.height/2-game.playersArray[0].y);
-    ctx.drawImage(map, 0, 0, canvas.width, canvas.height, canvas.width/2-game.playersArray[0].x, canvas.height/2-game.playersArray[0].y, canvas.width, canvas.height);
     game.Update(deltaTime);
+
+    game.playersArray[0].x = clamp(game.playersArray[0].x, 0, map.width);
+    game.playersArray[0].y = clamp(game.playersArray[0].y, 0, map.height);
+
+    const camX = clamp(game.playersArray[0].x - canvas.width/2, 0, map.width - canvas.width);
+    const camY = clamp(game.playersArray[0].y - canvas.height/2, 0, map.height - canvas.height);
+    ctx.save()
+    ctx.translate(-camX, -camY);
+
+    ctx.drawImage(map, 0, 0);
     game.Draw(ctx);
+    ctx.restore();
     requestAnimationFrame(Animate);
 }
 
@@ -132,19 +142,19 @@ class Player{
     }
     handleAccel(){
         if(this.inputHandler.keys.w.pressed && !this.isAnchored && !this.pressedOnce){
-            this.speed = -0.05;
+            this.speed = -0.08;
             this.turnSpeed = 0.0012;
             this.inputHandler.keys.w.pressed = false;
             this.pressedOnce = true;
         }
         else if(this.inputHandler.keys.w.pressed && !this.isAnchored && this.pressedOnce && !this.pressedTwice){
-            this.speed = -0.1;
+            this.speed = -0.13;
             this.turnSpeed = 0.001;
             this.inputHandler.keys.w.pressed = false;
             this.pressedTwice = true;
         }
         else if(this.inputHandler.keys.w.pressed && !this.isAnchored && this.pressedOnce && this.pressedTwice && !this.pressedThrice){
-            this.speed = -0.15;
+            this.speed = -0.18;
             this.turnSpeed = 0.00095;
             this.inputHandler.keys.w.pressed = false;
             this.pressedThrice = true;
@@ -152,19 +162,19 @@ class Player{
     }
     handleDecel(){
         if(this.inputHandler.keys.s.pressed && this.pressedOnce && this.pressedTwice && this.pressedThrice){
-            this.speed = -0.1;
+            this.speed = -0.13;
             this.turnSpeed = 0.001;
             this.inputHandler.keys.s.pressed = false;
             this.pressedThrice = false;
         }
         if(this.inputHandler.keys.s.pressed && this.pressedOnce && this.pressedTwice){
-            this.speed = -0.05;
+            this.speed = -0.08;
             this.turnSpeed = 0.0012;
             this.inputHandler.keys.s.pressed = false;
             this.pressedTwice = false;
         }
         if(this.inputHandler.keys.s.pressed && this.pressedOnce){
-            this.speed = -0.01;
+            this.speed = -0.02;
             this.turnSpeed = 0.0014;
             this.inputHandler.keys.s.pressed = false;
             this.pressedOnce = false;
@@ -322,4 +332,10 @@ class Explosion{
     Draw(context){
         context.drawImage(this.sprite, this.frameWidth*this.frame, 0, this.frameWidth, this.frameHeight, this.x-(this.frameWidth)/2, this.y-(this.frameHeight)/2, this.frameWidth, this.frameHeight);
     }
+}
+
+function clamp(value, min, max){
+    if(value < min) return min;
+    else if(value > max) return max;
+    return value;
 }
